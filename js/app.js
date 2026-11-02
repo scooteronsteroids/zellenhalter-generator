@@ -414,7 +414,7 @@ function buildStlList(r) {
     b.textContent = '⬇ ' + pc.name + '.stl';
     b.addEventListener('click', () => {
       const fn = `${baseName(r.options)}_${pc.name.replace(/[^\wäöüÄÖÜß]+/g, '_')}.stl`;
-      download(makeSTL(pc), fn, 'model/stl');
+      saveFile(makeSTL(pc), fn, 'model/stl');
     });
     box.appendChild(b);
   }
@@ -425,7 +425,18 @@ function export3MF(filter, suffix) {
   const o = lastResult.options;
   const pieces = lastResult.pieces.filter(filter);
   const data = make3MF(pieces, { bedW: o.bedW, bedD: o.bedD, title: `Zellenhalter ${o.s}S${o.p}P` });
-  download(data, `${baseName(o)}${suffix}.3mf`, 'model/3mf');
+  saveFile(data, `${baseName(o)}${suffix}.3mf`, 'model/3mf');
+}
+
+async function saveFile(data, filename, mime) {
+  try {
+    const res = await download(data, filename, mime);
+    if (res === 'zipped') setStatus(`${filename} wurde als ZIP gespeichert – entpacken und in Bambu Studio öffnen.`);
+    else if (res === 'declined') setStatus('Speichern abgebrochen.');
+    else setStatus(`${filename} heruntergeladen.`);
+  } catch (err) {
+    setStatus('Speichern nicht möglich: ' + err.message, 'err');
+  }
 }
 $('dlAll').addEventListener('click', () => export3MF(() => true, ''));
 $('dlA').addEventListener('click', () => export3MF(p => p.side === 'A', '_A'));
@@ -436,8 +447,7 @@ $('dlTest').addEventListener('click', async () => {
   try {
     const r = await compute(o);
     const data = make3MF(r.pieces.filter(p => p.side === 'A'), { bedW: o.bedW, bedD: o.bedD, title: 'Passungstest 2x2' });
-    download(data, `Passungstest_2x2_Spiel-${o.tol}mm.3mf`, 'model/3mf');
-    setStatus('Passungstest heruntergeladen.');
+    await saveFile(data, `Passungstest_2x2_Spiel-${o.tol}mm.3mf`, 'model/3mf');
   } catch (err) {
     setStatus('Fehler: ' + err.message.split('\n')[0], 'err');
   }

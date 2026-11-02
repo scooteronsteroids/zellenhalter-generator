@@ -108,11 +108,39 @@ export function makeSTL(piece) {
   return new Uint8Array(buf);
 }
 
-export function download(data, filename, mime) {
+// Auf claude.ai läuft die Seite in einer abgesicherten Umgebung: Downloads gehen dort
+// nur über die "downloads"-Freigabe, und .3mf/.stl sind nicht erlaubt -> als ZIP verpacken.
+let downloadsCap;
+async function getDownloadsCap() {
+  if (downloadsCap !== undefined) return downloadsCap;
+  try {
+    downloadsCap = window.claude && window.claude.use ? await window.claude.use('downloads') : null;
+  } catch (e) { downloadsCap = null; }
+  return downloadsCap;
+}
+
+/**
+ * Bietet eine Datei zum Speichern an.
+ * @returns 'saved' | 'zipped' | 'declined'
+ */
+export async function download(data, filename, mime) {
+  const cap = await getDownloadsCap();
+  if (cap) {
+    const zipName = filename.replace(/\.[^.]+$/, '') + '.zip';
+    const zip = zipSync({ [filename]: data }, { level: filename.endsWith('.3mf') ? 0 : 6 });
+    try {
+      await cap.save({ filename: zipName, data: new Blob([zip]) });
+      return 'zipped';
+    } catch (err) {
+      if (err && err.code === 'declined') return 'declined';
+      throw new Error(err && err.message ? err.message : 'Speichern nicht möglich');
+    }
+  }
   const blob = new Blob([data], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = filename;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 4000);
+  return 'saved';
 }

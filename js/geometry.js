@@ -20,6 +20,7 @@ export const DEFAULTS = {
   lipT: 1.0,        // Mindeststärke der Lippe (unten); wird bei dicken Streifen erhöht
   lipW: 2.0,        // radiale Überdeckung der Lippe (wie weit sie über die Zelle ragt)
   outline: 'contour', // 'contour' | 'rect'
+  corners: 'round', // 'round' (abgerundete Außenkanten) | 'sharp' (eckig)
   chamfer: 0.4,     // Einführfase oben
   vents: true,      // Lüftungs-/Gewichtslöcher zwischen den Zellen
   markers: true,    // +/- Polaritätsmarkierung an jeder Reihe
@@ -240,18 +241,24 @@ export function buildHolders(wasm, opts) {
       for (const c of rowsLast.values())
         circles.push(g(CS.circle(outer, seg).translate([c.x + d.markerExtra, c.y])));
     }
+    const sharp = o.corners === 'sharp';
+    // Eckige Variante: Quadrate statt Kreise um jede Zelle -> gerade Kanten, spitze Ecken
+    const shapes = sharp
+      ? circles.map(cs => { const b = cs.bounds(); return g(CS.square([b.max[0] - b.min[0], b.max[1] - b.min[1]], true)
+          .translate([(b.max[0] + b.min[0]) / 2, (b.max[1] + b.min[1]) / 2])); })
+      : circles;
     let outline;
     if (o.outline === 'rect') {
-      const all = g(CS.union(circles));
+      const all = g(CS.union(shapes));
       const b = all.bounds();
-      const corner = Math.min(4, outer);
+      const corner = sharp ? 0 : Math.min(4, outer);
       const w = b.max[0] - b.min[0] - 2 * corner, h = b.max[1] - b.min[1] - 2 * corner;
-      outline = g(g(CS.square([w, h], true)
-        .translate([(b.max[0] + b.min[0]) / 2, (b.max[1] + b.min[1]) / 2]))
-        .offset(corner, 'Round', 2, seg));
+      const box = g(CS.square([w, h], true).translate([(b.max[0] + b.min[0]) / 2, (b.max[1] + b.min[1]) / 2]));
+      outline = corner > 0 ? g(box.offset(corner, 'Round', 2, seg)) : box;
     } else {
       const k = d.pitch;
-      outline = g(g(g(CS.union(circles)).offset(k, 'Round', 2, seg)).offset(-k, 'Round', 2, seg));
+      const join = sharp ? 'Miter' : 'Round';
+      outline = g(g(g(CS.union(shapes)).offset(k, join, 2, seg)).offset(-k, join, 2, seg));
     }
 
     // ---------- Grundkörper ----------

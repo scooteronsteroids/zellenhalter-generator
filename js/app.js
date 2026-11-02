@@ -16,7 +16,7 @@ const NUM_FIELDS = ['s', 'p', 'nickel', 'copper', 'stripW', 'tol', 'height', 'wa
 const INITIAL = {
   cellId: 'p45b', printer: 'p1s', s: 13, p: 4,
   nickel: DEFAULTS.nickel, copper: DEFAULTS.copper, stripW: DEFAULTS.stripW,
-  layout: DEFAULTS.layout, outline: DEFAULTS.outline, vents: DEFAULTS.vents, markers: DEFAULTS.markers,
+  layout: DEFAULTS.layout, outline: DEFAULTS.outline, corners: DEFAULTS.corners, vents: DEFAULTS.vents, markers: DEFAULTS.markers,
   tol: DEFAULTS.tol, height: DEFAULTS.height, wall: DEFAULTS.wall, border: DEFAULTS.border,
   lipT: DEFAULTS.lipT, lipW: DEFAULTS.lipW, chamfer: DEFAULTS.chamfer, splitX: 0, splitY: 0,
 };
@@ -62,6 +62,7 @@ function writeForm() {
   printerSel.value = state.printer;
   for (const id of NUM_FIELDS) $(id).value = state[id] ?? '';
   document.querySelector(`input[name=layout][value=${state.layout === 'hex' ? 'hex' : 'grid'}]`).checked = true;
+  document.querySelector(`input[name=corners][value=${state.corners === 'sharp' ? 'sharp' : 'round'}]`).checked = true;
   $('outline').value = state.outline;
   $('vents').checked = state.vents;
   $('markers').checked = state.markers;
@@ -71,6 +72,7 @@ function readForm() {
   st.printer = printerSel.value;
   for (const id of NUM_FIELDS) { const v = parseFloat($(id).value); st[id] = Number.isFinite(v) ? v : null; }
   st.layout = document.querySelector('input[name=layout]:checked').value;
+  st.corners = document.querySelector('input[name=corners]:checked').value;
   st.outline = $('outline').value;
   st.vents = $('vents').checked;
   st.markers = $('markers').checked;
@@ -99,6 +101,7 @@ function geometryOptions(st) {
     lipT: n(st.lipT, DEFAULTS.lipT, 0.6, Math.max(0.6, height - 1.5)),
     lipW: n(st.lipW, DEFAULTS.lipW, 0.5, 8),
     outline: st.outline === 'rect' ? 'rect' : 'contour',
+    corners: st.corners === 'sharp' ? 'sharp' : 'round',
     chamfer: n(st.chamfer, DEFAULTS.chamfer, 0, 3),
     vents: !!st.vents, markers: !!st.markers,
     splitX: int(st.splitX, 0, 0, 30), splitY: int(st.splitY, 0, 0, 40),

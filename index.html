@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Zellenhalter-Generator</title>
+  <title>Zellenhalter ScootersOnSteroids</title>
   <meta name="description" content="3D-Zellenhalter für E-Scooter-Akkus mit frei wählbarer S/P-Konfiguration, Kanälen für Nickel/Kupfer und 3MF-Export für Bambu Lab.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +21,7 @@
         <circle cx="20" cy="20" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/>
         <circle cx="20" cy="20" r="2.2" fill="currentColor"/>
       </svg>
-      <span class="title">Zellen<b>halter</b></span>
+      <span class="title">Zellen<b>halter</b><small>ScootersOnSteroids</small></span>
     </div>
     <div class="status" id="status" role="status" aria-live="polite">Lade …</div>
   </header>
@@ -163,6 +163,16 @@
         </button>
       </div>
       <p class="sub" id="dbInfo">Zelle anklicken, um sie zu verwenden.</p>
+      <div class="dbtools">
+        <input type="text" id="dbSearch" placeholder="Suchen, z. B. P45B oder Samsung" aria-label="Zellen suchen">
+        <div class="chips filt" id="dbFilters" role="group" aria-label="Filter">
+          <button type="button" data-f="all">Alle</button>
+          <button type="button" data-f="21700">21700</button>
+          <button type="button" data-f="18650">18650</button>
+          <button type="button" data-f="nkon">NKON</button>
+          <button type="button" data-f="own">Eigene</button>
+        </div>
+      </div>
       <div class="tbl-wrap">
         <table class="tbl">
           <thead><tr><th>Zelle</th><th>Format</th><th class="r">Ø mm</th><th class="r">Länge</th><th class="r">Ah</th><th class="r">A</th><th class="r">g</th><th></th></tr></thead>
@@ -173,7 +183,7 @@
         <h3 id="cfTitle">Neue Zelle anlegen</h3>
         <input type="hidden" id="cfId">
         <div class="cf-grid">
-          <label class="wide">Name<input type="text" id="cfName" required maxlength="60" placeholder="z. B. Molicel P60B"></label>
+          <label class="wide">Name<input type="text" id="cfName" required maxlength="60" placeholder="z. B. Molicel INR21700-P45B"></label>
           <label>Ø<span class="in-u"><input type="number" id="cfD" step="0.05" min="8" max="60" required><i>mm</i></span></label>
           <label>Länge<span class="in-u"><input type="number" id="cfLen" step="0.1" min="20" max="200" required><i>mm</i></span></label>
           <label>Kapazität<span class="in-u"><input type="number" id="cfCap" step="0.05" min="0"><i>Ah</i></span></label>

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from '../vendor/three/addons/OrbitControls.js';
 import { RoomEnvironment } from '../vendor/three/addons/RoomEnvironment.js';
-import { PRINTERS } from './cells.js';
+import { PRINTERS, cellLabel } from './cells.js';
 import { DEFAULTS, derive, effectiveLip, stripSegments, stripsEnabled, stripThickness } from './geometry.js';
 import { make3MF, makeSTL, download, inSandbox } from './export.js';
 import { allCells, getCell, saveCell, deleteCell, onCellsChange, initCellStore, storageInfo } from './cellstore.js';
@@ -342,7 +342,7 @@ function drawSection(o) {
 // ================================================================ Anzeigen
 function renderCell() {
   const c = currentCell();
-  $('cpName').textContent = c.name;
+  $('cpName').textContent = cellLabel(c);
   $('cpSpec').textContent = [c.fmt, `Ø ${fmt(+c.d, 1)}`, has(+c.cap) ? `${fmt(+c.cap, 1)} Ah` : null, has(+c.i) ? `${fmt(+c.i, 0)} A` : null]
     .filter(Boolean).join(' · ');
   $('cellNote').hidden = !c.note;
@@ -354,7 +354,7 @@ function renderPack(o) {
   const v = has(+c.v) ? +c.v : 3.6, cap = +c.cap, I = +c.i, w = +c.w;
   const n = o.s * o.p;
   $('plConf').textContent = `${o.s}S${o.p}P`;
-  $('plSub').textContent = `${n} Zellen · ${c.name}`;
+  $('plSub').textContent = `${n} Zellen · ${cellLabel(c)}`;
   const stat = (k, val, unit) => `<div><dt>${k}</dt><dd>${val}<small>${unit}</small></dd></div>`;
   $('plStats').innerHTML = [
     stat('Spannung', fmt(o.s * v), 'V'),
@@ -457,7 +457,7 @@ function setButtons(on) { for (const id of ['dlAll', 'dlA', 'dlB', 'dlTest']) $(
 // ================================================================ Export
 function baseName(o) {
   const c = currentCell();
-  const cell = c.name.replace(/[^\wäöüÄÖÜß.-]+/g, '-').replace(/^-|-$/g, '');
+  const cell = (c.short || c.name).replace(/[^\wäöüÄÖÜß.-]+/g, '-').replace(/^-|-$/g, '');
   return `Zellenhalter_${o.s}S${o.p}P_${cell}`;
 }
 function buildStlList(r) {
@@ -523,25 +523,40 @@ function useCell(id) {
   onChange();
 }
 
+let dbFilter = 'all';
 function renderDb() {
-  const cells = allCells();
+  const q = $('dbSearch').value.trim().toLowerCase();
+  const cells = allCells().filter(c => {
+    if (dbFilter === 'own' && c.builtin) return false;
+    if (dbFilter === 'nkon' && !c.nkon) return false;
+    if (dbFilter === '21700' || dbFilter === '18650') { if (c.fmt !== dbFilter) return false; }
+    return !q || cellLabel(c).toLowerCase().includes(q);
+  });
   const n = (v, d) => has(+v) ? fmt(+v, d) : '–';
-  $('dbBody').innerHTML = cells.map(c => `
+  $('dbBody').innerHTML = cells.length ? cells.map(c => `
     <tr data-id="${esc(c.id)}" class="${c.id === state.cellId ? 'sel' : ''}">
-      <td class="nm">${esc(c.name)}${c.builtin ? '' : '<span class="own">EIGENE</span>'}</td>
+      <td class="nm">${esc(c.name)}${c.short ? ` <span class="short">(${esc(c.short)})</span>` : ''}${c.builtin ? '' : '<span class="own">EIGENE</span>'}${c.nkon ? '<span class="nkon">NKON</span>' : ''}</td>
       <td>${esc(c.fmt)}</td>
-      <td class="r">${n(c.d, 2)}</td><td class="r">${n(c.len, 1)}</td><td class="r">${n(c.cap, 1)}</td>
+      <td class="r">${n(c.d, 2)}</td><td class="r">${n(c.len, 1)}</td><td class="r">${n(c.cap, 2)}</td>
       <td class="r">${n(c.i, 0)}</td><td class="r">${n(c.w, 0)}</td>
       <td class="acts">${c.builtin
         ? `<button type="button" data-act="copy">Kopieren</button>`
         : `<button type="button" data-act="edit">Bearbeiten</button><button type="button" data-act="del">${armedDelete === c.id ? 'Wirklich?' : 'Löschen'}</button>`}</td>
-    </tr>`).join('');
-  $('dbInfo').textContent = `Zeile anklicken, um die Zelle zu verwenden. Eigene Zellen werden ${storageInfo() === 'konto' ? 'in deinem Konto' : 'in diesem Browser'} gespeichert.`;
+    </tr>`).join('') : `<tr class="empty"><td colspan="8">Keine Zelle gefunden. Unten kannst du sie selbst anlegen.</td></tr>`;
+  $('dbInfo').textContent = `${allCells().length} Zellen · Zeile anklicken, um sie zu verwenden. Eigene Zellen werden ${storageInfo() === 'konto' ? 'in deinem Konto' : 'in diesem Browser'} gespeichert.`;
+  document.querySelectorAll('#dbFilters button').forEach(b => b.classList.toggle('on', b.dataset.f === dbFilter));
 }
+$('dbSearch').addEventListener('input', renderDb);
+$('dbFilters').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-f]');
+  if (!b) return;
+  dbFilter = b.dataset.f;
+  renderDb();
+});
 
 $('dbBody').addEventListener('click', (e) => {
   const tr = e.target.closest('tr');
-  if (!tr) return;
+  if (!tr || !tr.dataset.id) return;
   const id = tr.dataset.id;
   const act = e.target.closest('button')?.dataset.act;
   const c = getCell(id);
@@ -566,7 +581,7 @@ $('dbBody').addEventListener('click', (e) => {
 
 function fillForm(c, editing) {
   $('cfId').value = editing ? c.id : '';
-  $('cfName').value = editing ? c.name : `${c.name} (eigene)`;
+  $('cfName').value = editing ? c.name : `${cellLabel(c)} – eigene`;
   $('cfD').value = c.d ?? ''; $('cfLen').value = c.len ?? ''; $('cfCap').value = c.cap ?? '';
   $('cfI').value = c.i ?? ''; $('cfW').value = c.w ?? ''; $('cfV').value = c.v ?? 3.6;
   $('cfTitle').textContent = editing ? `„${c.name}“ bearbeiten` : 'Neue Zelle anlegen';

@@ -1,4 +1,4 @@
-# Zellenhalter-Generator
+# Zellenhalter ScootersOnSteroids
 
 Webseite zum Erzeugen von 3D-druckbaren **Zellenhaltern für E-Scooter-Akkus**
 (21700 / 18650 / 26650). Konfiguration in **S (Reihe)** und **P (parallel)**,
@@ -6,8 +6,9 @@ Export als **3MF** (Bambu Studio, OrcaSlicer, PrusaSlicer) oder STL.
 
 ## Funktionen
 
-- **Zellen-Datenbank**: Presets (Ampace JP40, Molicel P45B/P50B/P42A, Tenpower 50XG/60XG,
-  Samsung 40T/50S, generische 18650/21700/26650) plus eigene Zellen anlegen, bearbeiten,
+- **Zellen-Datenbank** mit über 30 bekannten Zellen (21700 und 18650 von Molicel, Samsung, LG,
+  EVE, Ampace, Tenpower, Murata, Panasonic, DMEGC …), voller Name mit Kurzname in Klammern,
+  NKON-Zellen markiert, Suche und Filter, dazu eigene Zellen anlegen, bearbeiten,
   löschen – eigene Zellen werden gespeichert (Browser, auf claude.ai im Konto)
 - S und P einstellen, Akkudaten auf einen Blick: Spannung, Kapazität, Wh, Strom, Leistung, Gewicht
 - **Nickel/Kupfer**: Stärke und Breite der Verbinder eingeben – der Halter bekommt auf der
@@ -30,7 +31,9 @@ python3 -m http.server 8000
 # dann http://localhost:8000 öffnen
 ```
 
-Oder per **GitHub Pages**: Repository → Settings → Pages → Branch auswählen → fertig.
+Oder per **GitHub Pages**: Repository → Settings → Pages → „Deploy from a branch“ →
+Branch `claude/escooter-battery-holder-3d-izu9jz`, Ordner `/ (root)` → Save. Danach ist die Seite unter
+`https://scooteronsteroids.github.io/zellenhalter-generator/` erreichbar.
 
 ## Druckhinweise
 

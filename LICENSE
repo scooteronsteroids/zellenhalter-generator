@@ -1,0 +1,47 @@
+Copyright (c) 2026 ScootersOnSteroids. Alle Rechte vorbehalten. / All rights reserved.
+
+DEUTSCH
+
+Diese Software („Zellenhalter ScootersOnSteroids“), bestehend aus Quellcode,
+Gestaltung, Texten, der Zellen-Datenbank und den daraus erzeugten Modellen,
+ist urheberrechtlich geschützt.
+
+Erlaubt ist ausschließlich die Nutzung der veröffentlichten Webseite über
+den Browser, um Zellenhalter für den eigenen Gebrauch zu erzeugen und zu drucken.
+
+Ohne vorherige schriftliche Zustimmung des Rechteinhabers ist insbesondere
+untersagt:
+  - den Quellcode ganz oder teilweise zu kopieren, zu vervielfältigen,
+    zu verändern, zu übersetzen oder in andere Software zu übernehmen;
+  - die Webseite oder Teile davon unter eigenem oder fremdem Namen erneut
+    zu veröffentlichen, zu hosten oder anzubieten;
+  - die Software, die Webseite oder die damit erzeugten Dateien
+    zu verkaufen, zu vermieten oder sonst gewerblich zu verwerten;
+  - Urheber-, Copyright- oder Lizenzhinweise zu entfernen oder zu verändern.
+
+Dass der Quellcode öffentlich einsehbar ist, räumt keinerlei Nutzungs-
+oder Verwertungsrechte ein. Verstöße werden zivil- und strafrechtlich verfolgt.
+
+Die Software wird ohne Gewähr bereitgestellt. Für Schäden, die aus der Nutzung
+der erzeugten Modelle oder dem Bau von Akkus entstehen, wird keine Haftung
+übernommen, soweit gesetzlich zulässig.
+
+Anfragen zu Lizenzen: über das GitHub-Profil „scooteronsteroids“.
+
+ENGLISH
+
+This software ("Zellenhalter ScootersOnSteroids"), including its source code,
+design, texts, cell database and generated models, is protected by copyright.
+
+You may only use the published website in a browser to generate and print
+cell holders for your own personal use.
+
+Without prior written permission of the copyright holder you may NOT copy,
+reproduce, modify, translate, republish, host, sell, sublicense or otherwise
+commercially exploit the software, the website or any part of it, nor remove
+or alter any copyright or license notices. Public visibility of the source code
+does not grant any rights. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY
+OF ANY KIND.
+
+Third-party components in the "vendor" folder are licensed under their own
+terms, see THIRD-PARTY-NOTICES.md.

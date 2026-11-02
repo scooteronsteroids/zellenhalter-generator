@@ -1,3 +1,5 @@
+// © 2026 ScootersOnSteroids – Zellenhalter. Alle Rechte vorbehalten.
+// Kopieren, Verändern oder Weiterverbreiten ohne schriftliche Erlaubnis ist untersagt. Siehe LICENSE.
 // Export als 3MF (Bambu Studio / OrcaSlicer / PrusaSlicer) und binäres STL.
 import { zipSync, strToU8 } from '../vendor/fflate.js';
 
@@ -35,7 +37,9 @@ export function make3MF(pieces, { bedW = 256, bedD = 256, title = 'Zellenhalter'
   chunks.push('<?xml version="1.0" encoding="UTF-8"?>\n');
   chunks.push('<model unit="millimeter" xml:lang="de-DE" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">\n');
   chunks.push(`<metadata name="Title">${esc(title)}</metadata>\n`);
-  chunks.push('<metadata name="Application">Zellenhalter-Generator</metadata>\n');
+  chunks.push('<metadata name="Application">Zellenhalter ScootersOnSteroids</metadata>\n');
+  chunks.push('<metadata name="Designer">ScootersOnSteroids</metadata>\n');
+  chunks.push(`<metadata name="Copyright">© ${new Date().getFullYear()} ScootersOnSteroids. Nur für den eigenen Gebrauch.</metadata>\n`);
   chunks.push('<resources>\n');
   parts.forEach((p, k) => {
     chunks.push(`<object id="${k + 1}" name="${esc(p.name)}" type="model"><mesh><vertices>\n`);
@@ -86,7 +90,7 @@ export function makeSTL(piece) {
   const nTri = I.length / 3;
   const buf = new ArrayBuffer(84 + nTri * 50);
   const dv = new DataView(buf);
-  const header = 'Zellenhalter-Generator ' + piece.name.normalize('NFKD').replace(/[^\x20-\x7e]/g, '-');
+  const header = '(c) ScootersOnSteroids Zellenhalter ' + piece.name.normalize('NFKD').replace(/[^\x20-\x7e]/g, '-');
   for (let i = 0; i < Math.min(80, header.length); i++) dv.setUint8(i, header.charCodeAt(i));
   dv.setUint32(80, nTri, true);
   let o = 84;

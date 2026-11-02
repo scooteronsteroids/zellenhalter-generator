@@ -1,3 +1,5 @@
+// © 2026 ScootersOnSteroids – Zellenhalter. Alle Rechte vorbehalten.
+// Kopieren, Verändern oder Weiterverbreiten ohne schriftliche Erlaubnis ist untersagt. Siehe LICENSE.
 // Web-Worker: rechnet die Geometrie im Hintergrund, damit die Oberfläche flüssig bleibt.
 import Module from '../vendor/manifold/manifold.js';
 import { buildHolders } from './geometry.js';

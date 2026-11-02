@@ -1,3 +1,5 @@
+// © 2026 ScootersOnSteroids – Zellenhalter. Alle Rechte vorbehalten.
+// Kopieren, Verändern oder Weiterverbreiten ohne schriftliche Erlaubnis ist untersagt. Siehe LICENSE.
 // Geometrie-Erzeugung für Zellenhalter mit manifold-3d (robuste CSG, garantiert
 // wasserdichte/manifold Meshes – ideal für Slicer wie Bambu Studio).
 //

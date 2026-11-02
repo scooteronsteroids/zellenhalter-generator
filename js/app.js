@@ -1,3 +1,5 @@
+// © 2026 ScootersOnSteroids – Zellenhalter. Alle Rechte vorbehalten.
+// Kopieren, Verändern oder Weiterverbreiten ohne schriftliche Erlaubnis ist untersagt. Siehe LICENSE.
 import * as THREE from 'three';
 import { OrbitControls } from '../vendor/three/addons/OrbitControls.js';
 import { RoomEnvironment } from '../vendor/three/addons/RoomEnvironment.js';

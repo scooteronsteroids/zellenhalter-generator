@@ -1,3 +1,5 @@
+// © 2026 ScootersOnSteroids – Zellenhalter. Alle Rechte vorbehalten.
+// Kopieren, Verändern oder Weiterverbreiten ohne schriftliche Erlaubnis ist untersagt. Siehe LICENSE.
 // Zell-Datenbank: eingebaute Presets + eigene Zellen.
 // Eigene Zellen werden im Browser gespeichert (localStorage) und – wenn die Seite
 // auf claude.ai läuft – zusätzlich privat im Konto des Betrachters.

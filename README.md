@@ -62,3 +62,10 @@ Branch `claude/escooter-battery-holder-3d-izu9jz`, Ordner `/ (root)` → Save. D
 
 Schriften (Chakra Petch, IBM Plex Sans, JetBrains Mono) kommen von Google Fonts; ohne Internet
 wird automatisch eine Systemschrift verwendet.
+
+## Lizenz
+
+© 2026 ScootersOnSteroids. **Alle Rechte vorbehalten.** Dieses Projekt ist **keine** Open-Source-Software.
+Die Webseite darf zum Erzeugen von Zellenhaltern für den eigenen Gebrauch genutzt werden. Kopieren,
+Verändern, erneutes Veröffentlichen oder gewerbliche Nutzung des Codes ist ohne schriftliche Erlaubnis
+untersagt. Details in [`LICENSE`](LICENSE). Fremdbibliotheken siehe [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md).

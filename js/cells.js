@@ -1,3 +1,5 @@
+// © 2026 ScootersOnSteroids – Zellenhalter. Alle Rechte vorbehalten.
+// Kopieren, Verändern oder Weiterverbreiten ohne schriftliche Erlaubnis ist untersagt. Siehe LICENSE.
 // Zell-Presets. Werte nach Hersteller-Datenblättern bzw. NKON-Angaben (Stand Nov. 2026).
 // Bitte immer mit dem Datenblatt der eigenen Zellen abgleichen.
 // name  = ausgeschriebener Name, short = Kurzname (Anzeige: "name (short)")

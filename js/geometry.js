@@ -20,7 +20,7 @@ export const DEFAULTS = {
   lipT: 1.6,        // Stärke der Lippe (unten)
   lipW: 2.0,        // radiale Überdeckung der Lippe (wie weit sie über die Zelle ragt)
   outline: 'contour', // 'contour' | 'rect'
-  chamfer: 0.6,     // Einführfase oben
+  chamfer: 0.4,     // Einführfase oben
   vents: true,      // Lüftungs-/Gewichtslöcher zwischen den Zellen
   markers: true,    // +/- Polaritätsmarkierung an jeder Reihe
   segments: 48,     // Kreisauflösung (48 Segmente = < 0,03 mm Abweichung bei 21700)
@@ -223,8 +223,9 @@ export function buildHolders(wasm, opts) {
     const cutters = [];
     cutters.push(g(g(g(CS.union(holes)).extrude(H - lipT + 1)).translate([0, 0, lipT])));
     cutters.push(g(g(g(CS.union(lipHoles)).extrude(H + 2)).translate([0, 0, -1])));
-    if (o.chamfer > 0) {
-      const ch = Math.min(o.chamfer, H - lipT - 0.4);
+    if (o.chamfer > 0 && o.wall > 0.45) {
+      // Fase so begrenzen, dass zwischen zwei Zellen oben mind. 0,4 mm Wand bleibt
+      const ch = Math.min(o.chamfer, H - lipT - 0.4, Math.max(0, (o.wall - 0.4) / 2));
       // Kegel überlappen sich nicht -> compose statt teurer Boolean-Vereinigung
       const cone = g(M.cylinder(ch + 0.5, d.R, d.R + ch + 0.5, seg));
       cutters.push(g(M.compose(d.cells.map(c => g(cone.translate([c.x, c.y, H - ch]))))));
@@ -341,13 +342,17 @@ export function buildHolders(wasm, opts) {
     }
 
     const bounds = fullA.boundingBox();
+    // Tatsächliche Teilegrößen gegen das Druckbett prüfen (auch um 90° gedreht)
+    const bw = o.bedW - 2 * o.bedMargin, bd = o.bedD - 2 * o.bedMargin;
+    const allFit = pieces.every(pc => fits([pc.bounds.max[0] - pc.bounds.min[0], pc.bounds.max[1] - pc.bounds.min[1]], bw, bd));
     return {
       pieces,
       derived: d,
-      split: { nx: split.nx, ny: split.ny, auto: split.auto !== false, allFit: split.allFit },
+      split: { nx: split.nx, ny: split.ny, auto: split.auto !== false, allFit },
       size: [bounds.max[0] - bounds.min[0], bounds.max[1] - bounds.min[1], H],
       ventR,
       lipT,
+      chamferEff: o.chamfer > 0 && o.wall > 0.45 ? Math.min(o.chamfer, H - lipT - 0.4, Math.max(0, (o.wall - 0.4) / 2)) : 0,
       options: o,
     };
   } finally {

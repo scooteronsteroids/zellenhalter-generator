@@ -119,6 +119,11 @@ async function getDownloadsCap() {
   return downloadsCap;
 }
 
+/** true, wenn die Seite in der claude.ai-Umgebung läuft (Speichern dort als ZIP). */
+export async function inSandbox() {
+  return !!(await getDownloadsCap());
+}
+
 /**
  * Bietet eine Datei zum Speichern an.
  * @returns 'saved' | 'zipped' | 'declined'

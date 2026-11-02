@@ -6,8 +6,8 @@ Export als **3MF** (Bambu Studio, OrcaSlicer, PrusaSlicer) oder STL.
 
 ## Funktionen
 
-- Zell-Presets: Ampace JP40, Molicel P45B / P50B / P42A, 10Power X50G / X60G,
-  Samsung 40T / 50S, generische 18650 / 21700 / 26650 – oder eigene Maße
+- Zell-Presets: Ampace JP40, Molicel P45B / P50B / P42A, Tenpower 50XG / 60XG
+  (oft „10Power X50G/X60G“ geschrieben), Samsung 40T / 50S, generische 18650 / 21700 / 26650 – oder eigene Maße
 - Beliebige S/P-Konfiguration, Schnellwahl 36 V … 84 V
 - Anordnung **Raster** oder **Wabe** (versetzt, kompakter)
 - Lippe unten (Zelle fällt nicht durch, Mitte frei zum Punktschweißen),
@@ -42,7 +42,7 @@ Oder per **GitHub Pages**: Repository → Settings → Pages → Branch auswähl
 
 > ⚠️ Lithium-Akkus können bei fehlerhaftem Aufbau brennen. Nur mit passendem BMS,
 > geeigneten Nickelstreifen und fachgerechtem Punktschweißen aufbauen. Zelldaten
-> (insbesondere für 10Power X50G/X60G) immer mit dem Datenblatt abgleichen.
+> (insbesondere den Dauerstrom) immer mit dem Datenblatt abgleichen.
 
 ## Aufbau
 
@@ -55,3 +55,6 @@ Oder per **GitHub Pages**: Repository → Settings → Pages → Branch auswähl
 | `js/export.js` | 3MF- und STL-Export |
 | `js/cells.js` | Zell- und Drucker-Presets |
 | `vendor/` | three.js 0.170, manifold-3d 3.2.1, fflate 0.8.2 (lokal, keine CDN nötig) |
+
+Schriften (Barlow Condensed, IBM Plex) kommen von Google Fonts; ohne Internet
+wird automatisch eine Systemschrift verwendet.

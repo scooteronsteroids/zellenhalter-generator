@@ -17,12 +17,16 @@ export const DEFAULTS = {
   wall: 1.2,        // Wandstärke zwischen zwei Zellen
   border: 3,        // Außenrand
   height: 10,       // Gesamthöhe des Halters
-  lipT: 1.6,        // Stärke der Lippe (unten)
+  lipT: 1.0,        // Mindeststärke der Lippe (unten); wird bei dicken Streifen erhöht
   lipW: 2.0,        // radiale Überdeckung der Lippe (wie weit sie über die Zelle ragt)
   outline: 'contour', // 'contour' | 'rect'
   chamfer: 0.4,     // Einführfase oben
   vents: true,      // Lüftungs-/Gewichtslöcher zwischen den Zellen
   markers: true,    // +/- Polaritätsmarkierung an jeder Reihe
+  nickel: 0.15,     // Nickelstreifen-Stärke (mm), 0 = keine
+  copper: 0,        // Kupfer-Stärke (mm), 0 = keins
+  stripW: 8,        // Streifenbreite (mm)
+  stripGap: 0.4,    // Spiel der Kanäle auf die Streifenbreite
   segments: 48,     // Kreisauflösung (48 Segmente = < 0,03 mm Abweichung bei 21700)
   splitX: 0,        // 0 = automatisch
   splitY: 0,
@@ -58,6 +62,45 @@ export function derive(o) {
 
   return { holeD, R, pitch, rowPitch, lipR, markerExtra, cells,
            spanX: maxX - minX, spanY: maxY - minY };
+}
+
+/** Gesamtstärke der Verbinder (Nickel + Kupfer) */
+export function stripThickness(o) {
+  return Math.max(0, (+o.nickel || 0)) + Math.max(0, (+o.copper || 0));
+}
+export function stripsEnabled(o) {
+  return stripThickness(o) > 0 && (+o.stripW || 0) > 0;
+}
+/** Tatsächliche Lippenstärke: mindestens so dick wie Nickel + Kupfer,
+ *  damit die Streifen in ihren Kanälen nicht über den Halter hinausstehen. */
+export function effectiveLip(o) {
+  const want = Math.max(o.lipT, stripsEnabled(o) ? stripThickness(o) : 0);
+  return Math.max(0.4, Math.min(want, o.height - 1.5));
+}
+
+/**
+ * Verlauf der Verbinder auf einer Seite des Akkus.
+ * Seite A (unten) verbindet die Reihen 0+1, 2+3, …; Seite B (oben) 1+2, 3+4, …
+ * Jede Reihe bekommt zusätzlich einen durchgehenden Streifen (Parallelgruppe).
+ * @returns [{a:{x,y}, b:{x,y}, kind:'p'|'s'}]
+ */
+export function stripSegments(o, d, face) {
+  const rows = [];
+  for (const c of d.cells) (rows[c.j] ||= []).push(c);
+  rows.forEach(r => r.sort((u, v) => u.x - v.x));
+  const segs = [];
+  for (const r of rows) segs.push({ a: r[0], b: r[r.length - 1], kind: 'p' });
+  for (let j = face === 'A' ? 0 : 1; j + 1 < o.s; j += 2) {
+    for (const c of rows[j]) {
+      let best = null, bd = Infinity;
+      for (const n of rows[j + 1]) {
+        const dd = (n.x - c.x) ** 2 + (n.y - c.y) ** 2;
+        if (dd < bd - 1e-6) { bd = dd; best = n; }
+      }
+      segs.push({ a: c, b: best, kind: 's' });
+    }
+  }
+  return segs;
 }
 
 // Zelle (i,j) inkl. "Geister"-Zellen außerhalb des Rasters (für die Teilung)
@@ -179,7 +222,7 @@ export function buildHolders(wasm, opts) {
     const seg = o.segments;
     const outer = d.R + o.border;
     const H = o.height;
-    const lipT = Math.min(o.lipT, H - 1);
+    const lipT = effectiveLip(o);
 
     // ---------- Außenkontur ----------
     const circles = [];
@@ -266,28 +309,46 @@ export function buildHolders(wasm, opts) {
     const cutAll = g(M.union(cutters));
     const base = g(body.subtract(cutAll));
 
-    // ---------- Polaritätsmarkierung (oben eingraviert) ----------
+    // ---------- Seitenspezifische Schnitte: Streifenkanäle + Polaritätszeichen ----------
     // Seite A: Zeichen zeigt, welcher Pol in Halter A nach unten zeigt.
     // Seite B (oberer Halter, gespiegelt gedruckt): umgekehrte Polarität.
     const markerDepth = 0.6;
-    function withMarkers(solid, invert) {
-      if (!o.markers) return solid;
-      const size = Math.min(6, o.border + d.markerExtra - 1.5);
-      if (size < 2) return solid;
-      const shapes = [];
-      for (const c of rowsFirst.values()) {
-        const plus = (c.j % 2 === 0) !== invert;
-        // Seite B wird später an X gespiegelt -> Zeichen rechts setzen, landet dann links
-        const x = invert
-          ? rowsLast.get(c.j).x + d.R + (o.border + d.markerExtra) / 2
-          : c.x - d.R - (o.border + d.markerExtra) / 2;
-        shapes.push(g(signShape(CS, plus, size, x, c.y)));
+    function sideCutter(face) {
+      const invert = face === 'B';
+      const parts = [];
+      if (o.markers) {
+        const size = Math.min(6, o.border + d.markerExtra - 1.5);
+        if (size >= 2) {
+          const shapes = [];
+          for (const c of rowsFirst.values()) {
+            const plus = (c.j % 2 === 0) !== invert;
+            // Seite B wird später an X gespiegelt -> Zeichen rechts setzen, landet dann links
+            const x = invert
+              ? rowsLast.get(c.j).x + d.R + (o.border + d.markerExtra) / 2
+              : c.x - d.R - (o.border + d.markerExtra) / 2;
+            shapes.push(g(signShape(CS, plus, size, x, c.y)));
+          }
+          parts.push(g(g(g(CS.union(shapes)).extrude(markerDepth + 1)).translate([0, 0, H - markerDepth])));
+        }
       }
-      const eng = g(g(g(CS.union(shapes)).extrude(markerDepth + 1)).translate([0, 0, H - markerDepth]));
-      return g(solid.subtract(eng));
+      if (stripsEnabled(o)) {
+        // Kanäle auf der Außenseite bis hinunter auf die Zellpole (Tiefe = Lippenstärke)
+        const r = (o.stripW + o.stripGap) / 2;
+        const bands = stripSegments(o, d, face).map(sg => g(CS.hull([
+          g(CS.circle(r, 24).translate([sg.a.x, sg.a.y])),
+          g(CS.circle(r, 24).translate([sg.b.x, sg.b.y])),
+        ])));
+        parts.push(g(g(g(CS.union(bands)).extrude(lipT + 1)).translate([0, 0, -1])));
+      }
+      return parts;
     }
-    const fullA = withMarkers(base, false);
-    const fullB = withMarkers(base, true);
+    const withCuts = (solid, face) => {
+      const parts = sideCutter(face);
+      if (!parts.length) return solid;
+      return g(solid.subtract(parts.length === 1 ? parts[0] : g(M.compose(parts))));
+    };
+    const fullA = withCuts(base, 'A');
+    const fullB = withCuts(base, 'B');
 
     // ---------- Teilung für den Bauraum ----------
     const split = chooseSplit(o, d);
@@ -352,6 +413,7 @@ export function buildHolders(wasm, opts) {
       size: [bounds.max[0] - bounds.min[0], bounds.max[1] - bounds.min[1], H],
       ventR,
       lipT,
+      stripT: stripsEnabled(o) ? stripThickness(o) : 0,
       chamferEff: o.chamfer > 0 && o.wall > 0.45 ? Math.min(o.chamfer, H - lipT - 0.4, Math.max(0, (o.wall - 0.4) / 2)) : 0,
       options: o,
     };
